@@ -1,134 +1,54 @@
 # -*- coding: utf-8 -*-
+"""
+ФИНАЛЬНЫЙ КОД (после рефакторинга) — лабораторная 1.
 
-class TennisGameDefactored1:
+Счёт в теннисе для двух игроков. Рефакторинг исходника из tennis_original.py.
+Список применённых правил PEP8: см. REFACTORING.md.
+"""
 
-    def __init__(self, player1Name, player2Name):
-        self.player1Name = player1Name
-        self.player2Name = player2Name
-        self.p1points = 0
-        self.p2points = 0
 
-    def won_point(self, playerName):
-        if playerName == self.player1Name:
-            self.p1points += 1
+class TennisGame:
+    """Подсчёт очков в одиночном матче (правила love / deuce / advantage)."""
+
+    SCORE_NAMES = ("Love", "Fifteen", "Thirty", "Forty")
+    TIED_BELOW_FOUR = {
+        0: "Love-All",
+        1: "Fifteen-All",
+        2: "Thirty-All",
+        3: "Forty-All",
+    }
+
+    def __init__(self, player1_name: str, player2_name: str) -> None:
+        self.player1_name = player1_name
+        self.player2_name = player2_name
+        self.p1_points = 0
+        self.p2_points = 0
+
+    def won_point(self, player_name: str) -> None:
+        """Начислить очко игроку по имени."""
+        if player_name == self.player1_name:
+            self.p1_points += 1
         else:
-            self.p2points += 1
+            self.p2_points += 1
 
-    def score(self):
-        if self.p1points == self.p2points:
-            if self.p1points < 4:
-                return {
-                    0: "Love-All",
-                    1: "Fifteen-All",
-                    2: "Thirty-All",
-                    3: "Forty-All",
-                }[self.p1points]
+    def score(self) -> str:
+        """Текущая строка счёта для отображения."""
+        if self.p1_points < 4 and self.p2_points < 4:
+            if self.p1_points == self.p2_points:
+                return self.TIED_BELOW_FOUR[self.p1_points]
+            return (
+                f"{self.SCORE_NAMES[self.p1_points]}-"
+                f"{self.SCORE_NAMES[self.p2_points]}"
+            )
+        if self.p1_points == self.p2_points:
             return "Deuce"
 
-        if self.p1points >= 4 or self.p2points >= 4:
-            return self.determine_winner()
-
-        return self.get_score()
-
-    def determine_winner(self):
-        minus_result = self.p1points - self.p2points
-        if minus_result == 1:
-            return "Advantage " + self.player1Name
-        elif minus_result == -1:
-            return "Advantage " + self.player2Name
-        elif minus_result >= 2:
-            return "Win for " + self.player1Name
-        else:
-            return "Win for " + self.player2Name
-
-    def get_score(self):
-        score_map = ["Love", "Fifteen", "Thirty", "Forty"]
-        return score_map[self.p1points] + "-" + score_map[self.p2points]
-
-
-
-class TennisGameDefactored2:
-    """Класс для игры в теннис с улучшенной логикой счета."""
-
-    def __init__(self, player1Name, player2Name):
-        """Инициализация игры с двумя игроками."""
-        self.player1Name = player1Name
-        self.player2Name = player2Name
-        self.p1points = 0
-        self.p2points = 0
-
-    def won_point(self, playerName):
-        """Увеличивает очки игрока."""
-        if playerName == self.player1Name:
-            self.p1points += 1
-        else:
-            self.p2points += 1
-
-    def score(self):
-        """Возвращает текущий счет игры."""
-        if self.p1points == self.p2points and self.p1points < 4:
-            return self.get_tied_score()
-        elif self.p1points >= 4 or self.p2points >= 4:
-            return self.determine_winner()
-
-        return self.get_score()
-
-    def get_tied_score(self):
-        """Возвращает счет при равенстве очков."""
-        return {
-            0: "Love-All",
-            1: "Fifteen-All",
-            2: "Thirty-All",
-            3: "Forty-All",
-        }[self.p1points]
-
-    def determine_winner(self):
-        """Определяет победителя игры."""
-        minus_result = self.p1points - self.p2points
-        if minus_result == 1:
-            return "Advantage " + self.player1Name
-        elif minus_result == -1:
-            return "Advantage " + self.player2Name
-        elif minus_result >= 2:
-            return "Win for " + self.player1Name
-        else:
-            return "Win for " + self.player2Name
-
-    def get_score(self):
-        """Возвращает строку с текущим счетом."""
-        score_map = ["Love", "Fifteen", "Thirty", "Forty"]
-        return score_map[self.p1points] + "-" + score_map[self.p2points]
-
-
-class TennisGameDefactored3:
-    """Класс для игры в теннис с улучшенной логикой счета."""
-
-    def __init__(self, player1Name, player2Name):
-        """Инициализация игры с двумя игроками."""
-        self.p1N = player1Name
-        self.p2N = player2Name
-        self.p1 = 0
-        self.p2 = 0
-
-    def won_point(self, n):
-        """Увеличивает очки для указанного игрока."""
-        if n == self.p1N:
-            self.p1 += 1
-        else:
-            self.p2 += 1
-
-    def score(self):
-        """Возвращает текущий счет игры."""
-        if self.p1 < 4 and self.p2 < 4:
-            score_map = ["Love", "Fifteen", "Thirty", "Forty"]
-            return (score_map[self.p1] + "-All" if self.p1 == self.p2
-                    else score_map[self.p1] + "-" + score_map[self.p2])
-        elif self.p1 == self.p2:
-            return "Deuce"
-
-        winner = self.p1N if self.p1 > self.p2 else self.p2N
-        return "Advantage " + winner if abs(self.p1 - self.p2) == 1 else "Win for " + winner
-
-
-# NOTE: You must change this to point at the one of the three examples that you're working on!
-TennisGame = TennisGameDefactored1
+        leader = (
+            self.player1_name
+            if self.p1_points > self.p2_points
+            else self.player2_name
+        )
+        diff = abs(self.p1_points - self.p2_points)
+        if diff == 1:
+            return f"Advantage {leader}"
+        return f"Win for {leader}"
