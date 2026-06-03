@@ -1,7 +1,14 @@
+"""
+ФИНАЛЬНЫЙ КОД (после добавления логирования) — лабораторная 4.
+
+Та же игра, что в dungeon_before.py, но события пишутся в game_log.txt.
+Список точек логирования: CHANGES.md. Сравнение: git diff dungeon_before.py LR4.py.
+"""
+
 import random
 import logging
 
-# Настройка логирования
+# Настройка логирования (лаб. 4: файл + формат + уровень INFO)
 logging.basicConfig(
     filename='game_log.txt',  # Имя файла для сохранения логов
     level=logging.INFO,        # Уровень логирования (INFO и выше)
