@@ -1,44 +1,73 @@
+"""
+Лабораторная 7: асинхронный сбор и обработка данных.
+
+Сценарий (осмысленный, не sleep ради sleep):
+  Есть 5 независимых «источников данных» (условные API/БД).
+  1) Параллельно запрашиваем все источники (fetch) — имитация сетевой задержки.
+  2) Параллельно обрабатываем полученные строки (process) — имитация CPU/I/O.
+
+Используется asyncio.gather для конкурентного выполния корутин.
+Запуск: python LR7.py
+"""
+
 import asyncio
 import random
+from typing import List
 
 
-async def fetch_data(source_id):
-    """Имитирует асинхронное получение данных из источника."""
-    print(f"Запрос данных из источника {source_id}...")
-    # Имитируем задержку на получение данных
+async def fetch_from_source(source_id: int) -> str:
+    """
+    Шаг 1: асинхронное получение данных из источника source_id.
+
+    В реальном приложении здесь был бы aiohttp / asyncpg и т.д.
+    """
+    print(f"[fetch] Запрос к источнику {source_id}...")
     await asyncio.sleep(random.uniform(1, 3))
-    data = f"Данные из источника {source_id}"
-    print(f"Получены данные из источника {source_id}: {data}")
-    return data
+    payload = f"Данные из источника {source_id}"
+    print(f"[fetch] Источник {source_id}: {payload}")
+    return payload
 
 
-async def process_data(data):
-    """Имитирует асинхронную обработку данных."""
-    print(f"Обработка данных: {data}...")
-    # Имитируем задержку на обработку данных
+async def process_record(raw: str) -> str:
+    """
+    Шаг 2: асинхронная обработка одной записи (нормализация, валидация, запись).
+
+    Имитируем работу, которая не блокирует event loop надолго (await sleep).
+    """
+    print(f"[process] Обработка: {raw}...")
     await asyncio.sleep(random.uniform(1, 2))
-    processed_data = f"Обработанные {data}"
-    print(f"Завершена обработка данных: {processed_data}")
-    return processed_data
+    result = f"Обработанные {raw}"
+    print(f"[process] Готово: {result}")
+    return result
 
 
-async def main():
-    """Основная функция приложения."""
-    sources = [1, 2, 3, 4, 5]  # Идентификаторы источников данных
-    fetch_tasks = [fetch_data(source) for source in sources]
+async def run_pipeline(source_ids: List[int]) -> List[str]:
+    """
+    Полный пайплайн: gather(fetch) -> gather(process).
 
-    # Получаем данные из всех источников асинхронно
-    raw_data_list = await asyncio.gather(*fetch_tasks)
+    Возвращает список обработанных строк.
+    """
+    print(f"Старт пайплайна для источников: {source_ids}\n")
 
-    # Обрабатываем полученные данные асинхронно
-    process_tasks = [process_data(data) for data in raw_data_list]
-    processed_data_list = await asyncio.gather(*process_tasks)
+    raw_rows = await asyncio.gather(
+        *(fetch_from_source(sid) for sid in source_ids)
+    )
 
-    print("Все данные обработаны:")
-    for processed_data in processed_data_list:
-        print(processed_data)
+    processed = await asyncio.gather(
+        *(process_record(row) for row in raw_rows)
+    )
+
+    return processed
 
 
-# Запуск основного приложения
+async def main() -> None:
+    sources = [1, 2, 3, 4, 5]
+    results = await run_pipeline(sources)
+
+    print("\n=== Итог пайплайна ===")
+    for line in results:
+        print(line)
+
+
 if __name__ == "__main__":
     asyncio.run(main())
