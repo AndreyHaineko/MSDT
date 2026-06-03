@@ -1,7 +1,14 @@
+"""
+Лабораторная 3: валидация персонального CSV (вариант 77) регулярными выражениями.
+
+Читает 77.csv, находит номера невалидных строк данных, пишет checksum в result.json.
+Вспомогательные функции checksum — в checksum.py (шаблон курса).
+"""
+
 import csv
 import re
 from checksum import calculate_checksum, serialize_result
-from typing import List, Generator
+from typing import Generator, List
 
 VARIANT = 77
 
